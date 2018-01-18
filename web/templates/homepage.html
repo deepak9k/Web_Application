@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+
+<html>
+<title>{% block title %}Welcome{% endblock %}</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<h1 style="color:red">WEB Application </h1>
+<body style ="background-color:powderblue;"  >
+
+  <div class="navigation">
+  {% if g.user %}
+
+    <a href="{{ url_for('logout') }}">sign out [{{ g.user.username }}]</a>
+  {% else %}
+
+    <a href="{{ url_for('register_shop') }}">sign up</a> |
+    <a href="{{ url_for('login') }}">sign in</a>
+
+    </div>
+
+
+  {% endif %}
+
+  <form  action="" method="post">
+    <dl>
+      <dt>Type:
+      <dd><input type="text" name="search" size="30" value="{{ request.form.search }}">
+    </dl>
+  <div class="actions"><input type="submit" value=find></div>
+  {% if not error %}
+
+    {% endif %}
+  </form>
+
+  {% with flashes = get_flashed_messages() %}
+    {% if flashes %}
+         <ul class="flashes">
+             {% for message in flashes %}
+           <li>{{ message }}
+             {% endfor %}
+           <a href="{{ url_for('map')}}">Open Map</a>
+
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+{% if error %}<div class="error"><strong>Error:</strong> {{ error }}</div>{% endif %}
+</body>
+</html>
+
