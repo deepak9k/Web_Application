@@ -48,9 +48,9 @@ def init_db():
 @app.before_request
 def before_request():
     g.user = None
-    if 'user_id' in session:
-        g.user = query_db('select * from user where user_id = ?',
-                          [session['user_id']], one=True)
+    if 'shop_id' in session:
+        g.user = query_db('select * from user where shop_id = ?',
+                          [session['shop_id']], one=True)
 
 @app.cli.command('initdb')
 def initdb_command():
@@ -83,13 +83,30 @@ def login():
             shop_name = ?''', [request.form['shop_name']], one=True)
         if user is None:
             error = 'Invalid shop_name'
-        elif not (user['type'], request.form['type']):
+        elif not (user['password'], request.form['password']):
             error = 'Invalid type'
         else:
             flash('You were logged in')
             session['shop_id'] = user['shop_id']
             return redirect(url_for('homepage'))
     return render_template('login.html', error=error)
+
+@app.route('/shop_login', methods=['GET', 'POST'])
+def shop_view():
+        if not g.user:
+            return redirect(url_for('login'))
+        if request.method == 'POST':
+            user = ('select * from shops where shop_id = ?', [session['shop_id']])
+
+            if user is not None:
+                flash("Shop Name:"+user['shop_name'])
+                flash("Shop Type:" + user['type'])
+                north=user['north']
+                east=user['east']
+
+            return  render_template('shop_view')
+        return redirect(url_for('login'))
+
 
 
 
@@ -140,9 +157,9 @@ def register_shop():
         else:
             db = get_db()
             db.execute('''insert into shops (
-              shop_name, type, north, east) values (?, ?, ?, ?)''',
+              shop_name, type, north, east, password) values (?, ?, ?, ?, ?)''',
                        [request.form['shop_name'], request.form['type'],
-                        request.form['north'], request.form['east']])
+                        request.form['north'], request.form['east'], request.form['password']])
             db.commit()
             flash('You were successfully registered shops')
             return redirect(url_for('login'))

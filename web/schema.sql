@@ -14,6 +14,7 @@ create table shops (
 	east	float(7),
 	shop_name  varchar(50),
 	type	varchar(30),
-	Review  integer
+	Review  integer,
+	password varchar(15)
 );
 
