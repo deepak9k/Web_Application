@@ -49,7 +49,7 @@ def init_db():
 def before_request():
     g.user = None
     if 'shop_id' in session:
-        g.user = query_db('select * from user where shop_id = ?',
+        g.user = query_db('select * from shops where shop_id = ?',
                           [session['shop_id']], one=True)
 
 @app.cli.command('initdb')
@@ -76,36 +76,58 @@ def get_user_id(shop_name):
 def login():
     """Logs the user in."""
     if  g.user:
-        return render_template('login.html', error=None)
+        return redirect(url_for('shop_view'))
     error = None
     if request.method == 'POST':
+
         user = query_db('''select * from shops where
             shop_name = ?''', [request.form['shop_name']], one=True)
+        session['shop_id'] = user['shop_id']
+        print ( 'check if')
         if user is None:
+            print ('none')
             error = 'Invalid shop_name'
-        elif not (user['password'], request.form['password']):
+        elif not user['password']==request.form['password']:
             error = 'Invalid type'
+
         else:
+            print ( 'reached')
             flash('You were logged in')
             session['shop_id'] = user['shop_id']
-            return redirect(url_for('homepage'))
+            return redirect(url_for('shop_view'))
     return render_template('login.html', error=error)
 
 @app.route('/shop_login', methods=['GET', 'POST'])
 def shop_view():
         if not g.user:
             return redirect(url_for('login'))
+        user = query_db('select * from shops where shop_id = ?', [session['shop_id']], one=True)
+
+        q = '''select * from ''' + user['shop_name']
+        item_list = query_db(q)
+
+        if user is not None:
+
+            north = user['north']
+            east = user['east']
+
         if request.method == 'POST':
-            user = ('select * from shops where shop_id = ?', [session['shop_id']])
 
-            if user is not None:
-                flash("Shop Name:"+user['shop_name'])
-                flash("Shop Type:" + user['type'])
-                north=user['north']
-                east=user['east']
+            flash("Shop Name:" + user['shop_name'])
+            flash("Shop Type:" + user['type'])
+            db = get_db()
 
-            return  render_template('shop_view')
-        return redirect(url_for('login'))
+            sql='''insert into ''' + user['shop_name'] + '''( name, type, price) values (?, ?, ?)'''
+            db.execute(sql,
+                       [request.form['name'], request.form['type'],
+                        request.form['price']])
+            db.commit()
+
+            flash("item added")
+
+
+            return  redirect(url_for('shop_view'))
+        return render_template('shop_view.html', shop_name=user['shop_name'], type=user['type'], item_list=item_list)
 
 
 
@@ -120,6 +142,8 @@ def homepage():
 
         user = query_db('''select * from shops where
             shop_name = ?''', [request.form['search']], one=True)
+        print (user)
+        print (request.form['search'])
         if user is None:
             check = 'Invalid shop_name'
         else:
@@ -131,7 +155,7 @@ def homepage():
             flash("shop_name :"+user['shop_name'])
             flash("Type :"+user['type'])
             flash("Location :")
-            session['shop_id'] = user['shop_id']
+
             return redirect(url_for('homepage'))
     return render_template('homepage.html', error=check)
 
@@ -147,7 +171,7 @@ def register_shop():
         if not request.form['shop_name']:
             error = 'You have to enter a shop_name'
         elif not request.form['type']:
-            error = 'You have to enter a valid typ'
+            error = 'You have to enter a valid type'
         elif not request.form['north']:
             error = 'You have to enter a north'
         elif not request.form['east']:
@@ -161,6 +185,17 @@ def register_shop():
                        [request.form['shop_name'], request.form['type'],
                         request.form['north'], request.form['east'], request.form['password']])
             db.commit()
+
+            sql = '''CREATE TABLE
+                                    IF NOT EXISTS ''' + str(request.form['shop_name']) + ''' (
+                                    id integer PRIMARY KEY autoincrement,
+                                    name text NOT NULL,
+                                    type text,
+                                    price integer
+                                    review integer);'''
+            k = query_db(sql)
+
+
             flash('You were successfully registered shops')
             return redirect(url_for('login'))
     return render_template('register.html', error=error)

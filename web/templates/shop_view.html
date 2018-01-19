@@ -18,17 +18,20 @@
 
   <div  class="Shop">
       <dl>
-          <dt>{{shop_name}}</dt>
-          <dt>TYPE: {{type}}</dt>
+          <dt><strong style="color:blue">{{shop_name}}</strong></dt>
+          <dt>{{type}}</dt>
       </dl>
   </div>
 
   <form  action="" method="post">
     <dl>
-      <dt>Type:
-      <dd><input type="text" name="item" size="30" value="{{ request.form.item }}">
+      <dt>Item:<dd><input type="text" name="name" size="25" value=""> :Name
+        <dd><input type="text" name="type" size="25" value=""> :Type
+        <dd><input type="number" name="price" size="30" value=""> :price
+        <div class="actions"><input type="submit" value=Add></div>
     </dl>
-  <div class="actions"><input type="submit" value=add></div>
+
+
   {% if not error %}
 
     {% endif %}
@@ -40,13 +43,49 @@
              {% for message in flashes %}
            <li>{{ message }}
              {% endfor %}
-           <a href="{{ url_for('map')}}">Open Map</a>
 
         </ul>
       {% endif %}
     {% endwith %}
 
 {% if error %}<div class="error"><strong>Error:</strong> {{ error }}</div>{% endif %}
+<table   style="width:60%;
+                border: 1px solid black;
+                border-collapse: collapse;">
+    <tr>
+    <th style=" padding: 5px;
+                text-align: left;
+                border: 1px solid black;
+                border-collapse: collapse;
+                background:blue;"><strong>Name</strong></th>
+     <th style=" padding: 5px;
+                text-align: left;
+                border: 1px solid black;
+                border-collapse: collapse;
+                background:blue;"><strong>Type</strong></th>
+    <th style=" padding: 5px;
+                text-align: left;
+                border: 1px solid black;
+                border-collapse: collapse;
+                background:blue;"><strong>Price</strong></th>
+  </tr>
+    {% for id in item_list %}
+  <tr>
+    <th style=" padding: 5px;
+                text-align: left;
+                border: 1px solid black;
+                border-collapse: collapse;">{{id['name']}}</th>
+     <th style=" padding: 5px;
+                text-align: left;
+                border: 1px solid black;
+                border-collapse: collapse;">{{id['type']}}</th>
+    <th style=" padding: 5px;
+                text-align: left;
+                border: 1px solid black;
+                border-collapse: collapse;">{{id['price']}}</th>
+  </tr>
+    {% endfor %}
+</table>
 </body>
 </html>
 
