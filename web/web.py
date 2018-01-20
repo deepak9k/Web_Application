@@ -143,10 +143,21 @@ def homepage():
 
         user = query_db('''select * from shops where
             shop_name = ?''', [request.form['search']], one=True)
+        shop_list = query_db('''select shop_name from shops''')
+
+
+        if shop_list is not None:
+            for list in shop_list:
+
+                sql = '''select * from '''+ list['shop_name']+ ''' where name = ? or type = ?'''
+                data=query_db(sql,[request.form['search'], request.form['search']], one= True)
+                if data is not None:
+                    flash(data['name']+'     '+data['type']+'         '+str(data['price']))
 
         if user is None:
             check = 'Invalid shop_name'
         else:
+
             n=str(user['north'])
             e=str(user['east'])
 
