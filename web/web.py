@@ -49,6 +49,7 @@ def init_db():
 def before_request():
     g.user = None
     if 'shop_id' in session:
+        print ('check')
         g.user = query_db('select * from shops where shop_id = ?',
                           [session['shop_id']], one=True)
 
@@ -83,9 +84,9 @@ def login():
         user = query_db('''select * from shops where
             shop_name = ?''', [request.form['shop_name']], one=True)
         session['shop_id'] = user['shop_id']
-        print ( 'check if')
+
         if user is None:
-            print ('none')
+
             error = 'Invalid shop_name'
         elif not user['password']==request.form['password']:
             error = 'Invalid type'
@@ -142,8 +143,7 @@ def homepage():
 
         user = query_db('''select * from shops where
             shop_name = ?''', [request.form['search']], one=True)
-        print (user)
-        print (request.form['search'])
+
         if user is None:
             check = 'Invalid shop_name'
         else:
@@ -155,7 +155,7 @@ def homepage():
             flash("shop_name :"+user['shop_name'])
             flash("Type :"+user['type'])
             flash("Location :")
-
+            session['shop_id']=user['shop_id']
             return redirect(url_for('homepage'))
     return render_template('homepage.html', error=check)
 
@@ -203,7 +203,7 @@ def register_shop():
 
 @app.route('/location')
 def map():
-
+    print(session['shop_id'])
     user = query_db('''select * from shops where
                 shop_id = ?''', [session['shop_id']], one=True)
 
